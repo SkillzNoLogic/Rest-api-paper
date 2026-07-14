@@ -1,0 +1,6 @@
+name: RestStatsAPI
+version: '${version}'
+
+main: me.skillznologic.reststatsapi.RestStatsAPI
+api-version: '1.21.11'
+load: POSTWORLD
