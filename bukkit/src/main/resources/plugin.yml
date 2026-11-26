@@ -1,0 +1,7 @@
+name: RestStatsAPI
+version: '${version}'
+main: me.skillznologic.reststatsapi.bukkit.BukkitRestStats
+api-version: '1.13'
+load: POSTWORLD
+depend: [PlaceholderAPI]
+description: Exposes PlaceholderAPI player stats as a JSON REST API (bukkit build)

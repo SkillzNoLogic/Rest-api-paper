@@ -1,7 +1,0 @@
-name: RestStatsAPI
-version: '${version}'
-
-main: me.skillznologic.reststatsapi.RestStatsAPI
-api-version: '${apiVersion}'
-load: POSTWORLD
-depend: [PlaceholderAPI]

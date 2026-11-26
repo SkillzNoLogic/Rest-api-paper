@@ -1,0 +1,7 @@
+name: RestStatsAPI
+version: '${version}'
+main: me.skillznologic.reststatsapi.purpur.PurpurRestStats
+api-version: '1.20'
+load: POSTWORLD
+depend: [PlaceholderAPI]
+description: Exposes PlaceholderAPI player stats as a JSON REST API (purpur build)

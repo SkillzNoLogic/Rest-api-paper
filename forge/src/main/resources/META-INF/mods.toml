@@ -1,0 +1,19 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+issueTrackerURL="https://github.com/SkillzNoLogic/Rest-api-paper/issues"
+
+[[mods]]
+modId="reststatsapi"
+version="${version}"
+displayName="RestStatsAPI"
+authors="SkillzNoLogic"
+description='''Exposes vanilla player statistics as a JSON REST API. Server-side only.'''
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.reststatsapi]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20,)"
+ordering="NONE"
+side="BOTH"

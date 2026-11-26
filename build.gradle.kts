@@ -1,62 +1,73 @@
+import org.gradle.kotlin.dsl.support.serviceOf
+
+// RestStatsAPI multi-platform build.
+//   ./gradlew releaseJars   -> every platform jar in build/release/
+
 plugins {
-    id("java-library")
-    id("xyz.jpenilla.run-paper") version "3.0.2"
+    id("xyz.jpenilla.run-paper") version "3.0.2" apply false
 }
 
-repositories {
-    mavenCentral()
-    maven("https://repo.papermc.io/repository/maven-public/")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-}
-
-// Build target: which Minecraft line to compile against.
-//   ./gradlew build -Ptarget=1.20   -> Java 17 bytecode, works on 1.20 - 26.x (universal)
-//   ./gradlew build -Ptarget=1.21   -> Java 21 bytecode, works on 1.20.5 - 26.x
-//   ./gradlew build -Ptarget=26     -> Java 25 bytecode, works on 26.x
-data class Target(val paperApi: String, val javaRelease: Int, val apiVersion: String, val label: String)
-
-val targets = mapOf(
-    "1.20" to Target("1.20.1-R0.1-SNAPSHOT", 17, "1.20", "mc1.20-26.x"),
-    "1.21" to Target("1.21.11-R0.1-SNAPSHOT", 21, "1.21", "mc1.21-26.x"),
-    "26" to Target("26.3.build.262-stable", 25, "1.21", "mc26.x"),
+// Platform jars: project -> (jar label, Java bytecode level)
+val platforms = mapOf(
+    "bukkit" to ("bukkit-mc1.8-26.x" to 8),
+    "spigot" to ("spigot-mc1.20-26.x" to 17),
+    "paper" to ("paper-mc1.20-26.x" to 17),
+    "purpur" to ("purpur-mc1.20-26.x" to 17),
+    "fabric" to ("fabric-mc1.20-26.x" to 17),
+    "forge" to ("forge-mc1.20-26.x" to 17),
 )
-val targetKey = (findProperty("target") as String?) ?: "1.20"
-val target = targets[targetKey] ?: error("Unknown target '$targetKey', expected one of ${targets.keys}")
+// Shared libraries are compiled for Java 8 so the universal Bukkit jar can use them.
+val libraries = setOf("core", "bukkit-common", "vanilla")
 
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:${target.paperApi}")
-    compileOnly("me.clip:placeholderapi:2.11.6")
-    // Gson is bundled with every Paper/Spigot server, so it is not shaded.
-    compileOnly("com.google.code.gson:gson:2.10.1")
-}
+subprojects {
+    apply(plugin = "java-library")
 
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(25)
-    // Let a newer JDK compile against older APIs and vice versa; bytecode level is set by options.release.
-    disableAutoTargetJvm()
-}
+    repositories {
+        mavenCentral()
+        maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+        maven("https://repo.purpurmc.org/snapshots")
+        maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+        maven("https://maven.fabricmc.net/")
+        maven("https://maven.minecraftforge.net/")
+        maven("https://libraries.minecraft.net/")
+    }
 
-tasks {
-    compileJava {
+    configure<JavaPluginExtension> {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+        // Bytecode level is controlled by options.release; let Gradle resolve APIs built for any Java version.
+        disableAutoTargetJvm()
+    }
+
+    val release = platforms[name]?.second ?: 8
+    tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
-        options.release.set(target.javaRelease)
+        options.release.set(release)
+        options.compilerArgs.add("-Xlint:-options")
     }
 
-    jar {
-        archiveBaseName.set("RestStatsAPI")
-        archiveClassifier.set(target.label)
-    }
-
-    runServer {
-        minecraftVersion("1.21.11")
-        jvmArgs("-Xms2G", "-Xmx2G")
-    }
-
-    processResources {
-        val props = mapOf("version" to project.version, "apiVersion" to target.apiVersion)
+    tasks.withType<ProcessResources>().configureEach {
+        val props = mapOf("version" to project.version.toString())
         inputs.properties(props)
-        filesMatching("plugin.yml") {
-            expand(props)
+        filesMatching(listOf("plugin.yml", "fabric.mod.json", "META-INF/mods.toml")) { expand(props) }
+    }
+
+    platforms[name]?.let { (label, _) ->
+        // Bundle the shared modules into the platform jar (they are tiny and have no third-party dependencies).
+        val bundled = configurations.named("runtimeClasspath")
+        val archives = serviceOf<ArchiveOperations>()
+        tasks.named<Jar>("jar") {
+            archiveBaseName.set("RestStatsAPI")
+            archiveClassifier.set(label)
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            dependsOn(bundled)
+            from(bundled.map { cp: Configuration -> cp.filter { f: File -> f.name.endsWith(".jar") }.map { f: File -> archives.zipTree(f) } })
         }
     }
+}
+
+tasks.register<Copy>("releaseJars") {
+    description = "Builds every platform jar into build/release"
+    into(layout.buildDirectory.dir("release"))
+    platforms.keys.forEach { from(project(":$it").tasks.named("jar")) }
 }

@@ -1,0 +1,13 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+# How often (in seconds) player stats are refreshed.
+update-interval: 30
+
+# Max time (milliseconds) spent resolving placeholders per server tick. A refresh is spread across
+# as many ticks as needed so large player lists never cause a lag spike.
+tick-budget-ms: 2.0
+
+placeholders:
+  rank: "%rankedsmp_rank%"

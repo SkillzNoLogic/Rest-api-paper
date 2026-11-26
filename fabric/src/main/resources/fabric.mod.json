@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "reststatsapi",
+  "version": "${version}",
+  "name": "RestStatsAPI",
+  "description": "Exposes vanilla player statistics as a JSON REST API. Server-side only.",
+  "authors": ["SkillzNoLogic"],
+  "contact": { "sources": "https://github.com/SkillzNoLogic/Rest-api-paper" },
+  "license": "All-Rights-Reserved",
+  "environment": "server",
+  "entrypoints": {
+    "server": ["me.skillznologic.reststatsapi.fabric.RestStatsFabric"]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": ">=1.20",
+    "java": ">=17"
+  }
+}
