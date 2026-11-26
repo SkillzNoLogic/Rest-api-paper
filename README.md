@@ -1,125 +1,62 @@
 # RestStatsAPI
 
-A lightweight and configurable REST API plugin for Paper servers that exposes Minecraft player statistics through a simple JSON API.
+A lightweight REST API for Minecraft servers that exposes player statistics as JSON.
 
-RestStatsAPI allows server owners to create live leaderboards, websites, dashboards, Discord bots, and external tools by connecting Minecraft data directly to external applications.
+Use it to build live leaderboards, server websites, player profile pages, Discord bots and dashboards. You don't need custom integrations for every plugin: list the stats you want in a config file, and RestStatsAPI serves them over HTTP.
 
-Instead of creating custom integrations for every plugin, RestStatsAPI uses PlaceholderAPI to automatically retrieve and expose any placeholder value you configure.
+Runs on **Paper, Purpur, Spigot, any Bukkit server, Fabric and Forge**, from Minecraft **1.20 to 26.x** (and 1.8+ with the universal Bukkit jar).
+
+**[⬇ Download the latest release](https://github.com/SkillzNoLogic/Rest-api-paper/releases/latest)**
+
+---
 
 ## Features
 
-- 🌐 **REST API**
-  - Provides player data through HTTP endpoints in JSON format.
-  - Designed for websites, dashboards, and external applications.
+- 🌐 **Simple JSON API**: one HTTP request returns every player and their stats. CORS is enabled, so browsers can call it directly.
+- 🧩 **PlaceholderAPI support** (plugin builds): expose any placeholder from any plugin, with no code changes.
+- 📊 **Vanilla statistics** (Fabric and Forge builds): kills, deaths, play time, blocks mined, items crafted, and any other vanilla stat.
+- 👥 **Offline players included**: everyone who has joined the server is listed, not just who is online right now.
+- 🔄 **Automatic refresh**: stats update on a configurable interval.
+- 🚀 **No lag**: placeholder work is spread across server ticks, the mod builds read files on a background thread, and the JSON is built once per refresh, so API requests are effectively free.
 
-- 🧩 **PlaceholderAPI Integration**
-  - Supports any PlaceholderAPI-compatible plugin.
-  - Add new statistics without changing the plugin code.
+## Which jar do I need?
 
-- ⚙️ **Dynamic Configuration**
-  - Define your own placeholders in `config.yml`.
-  - The API automatically detects and displays configured values.
+| Your server | Download | Minecraft | Java | Stats come from |
+|-------------|----------|-----------|------|-----------------|
+| Paper (or a Paper fork) | `RestStatsAPI-<ver>-paper-mc1.20-26.x.jar` | 1.20 – 26.x | 17+ | PlaceholderAPI |
+| Purpur | `RestStatsAPI-<ver>-purpur-mc1.20-26.x.jar` | 1.20 – 26.x | 17+ | PlaceholderAPI |
+| Spigot | `RestStatsAPI-<ver>-spigot-mc1.20-26.x.jar` | 1.20 – 26.x | 17+ | PlaceholderAPI |
+| Anything Bukkit-based, including old versions | `RestStatsAPI-<ver>-bukkit-mc1.8-26.x.jar` | 1.8 – 26.x | 8+ | PlaceholderAPI |
+| Fabric | `RestStatsAPI-<ver>-fabric-mc1.20-26.x.jar` | 1.20 – 26.x | 17+ | Vanilla statistics |
+| Forge | `RestStatsAPI-<ver>-forge-mc1.20-26.x.jar` | 1.20 – 26.x | 17+ | Vanilla statistics |
 
-- 🔄 **Automatic Data Updates**
-  - Player statistics are refreshed automatically at configurable intervals.
-  - Keeps external applications synchronized with your server.
-
-- 👥 **Player Database**
-  - Tracks all players who have joined the server.
-  - Supports offline player statistics where supported by placeholders.
-
-- 🚀 **Lightweight Performance**
-  - Minimal server impact.
-  - Uses caching to reduce repeated placeholder calculations.
- 
-## Supported platforms
-
-Pick the jar for your server from the [latest release](https://github.com/SkillzNoLogic/Rest-api-paper/releases/latest):
-
-| Jar | Server | Minecraft | Java | Stats source |
-|-----|--------|-----------|------|--------------|
-| `RestStatsAPI-<ver>-paper-mc1.20-26.x.jar` | Paper (and forks) | 1.20 – 26.x | 17+ | PlaceholderAPI |
-| `RestStatsAPI-<ver>-purpur-mc1.20-26.x.jar` | Purpur | 1.20 – 26.x | 17+ | PlaceholderAPI |
-| `RestStatsAPI-<ver>-spigot-mc1.20-26.x.jar` | Spigot | 1.20 – 26.x | 17+ | PlaceholderAPI |
-| `RestStatsAPI-<ver>-bukkit-mc1.8-26.x.jar` | **Any** Bukkit server (CraftBukkit, Spigot, Paper, Purpur, ...) | 1.8 – 26.x | 8+ | PlaceholderAPI |
-| `RestStatsAPI-<ver>-fabric-mc1.20-26.x.jar` | Fabric (server-side only) | 1.20 – 26.x | 17+ | Vanilla statistics |
-| `RestStatsAPI-<ver>-forge-mc1.20-26.x.jar` | Forge (server-side only) | 1.20 – 26.x | 17+ | Vanilla statistics |
-
-### What's different per platform
-
-- **All Bukkit builds** resolve placeholders a few players per tick, using no more than `tick-budget-ms` (2 ms by default) each tick. Large player lists therefore never cause a lag spike. The JSON is built once per refresh, so API requests are effectively free.
-- **Paper / Purpur** also pause refreshing while the server's average tick time is above 45 ms (Paper API).
-- **Spigot** targets the modern Spigot API (`api-version: 1.20`).
-- **Universal Bukkit** is Java 8 bytecode built against the 1.8.8 API. It runs on anything Bukkit-based. Use it for old servers or uncommon forks.
-- **Fabric / Forge** have no PlaceholderAPI. Instead they serve vanilla statistics, read from the world's stats files on a background thread, so the server thread is never touched. Only files that changed since the last refresh are re-read. Minecraft writes these files on autosave and when a player logs out. The mods don't reference any Minecraft classes, so one jar covers 1.20 – 26.x. They're only needed on the server, not on clients.
+Not sure? Use the jar named after your server software. If your server is very old or an unusual fork, the **bukkit** jar runs on anything Bukkit-based.
 
 ## Installation
 
-**Bukkit / Spigot / Paper / Purpur**
-1. Put the jar in `plugins/` and install [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) plus the expansions you want.
-2. Restart the server, then edit `plugins/RestStatsAPI/config.yml`.
+### Paper / Purpur / Spigot / Bukkit
 
-**Fabric / Forge**
-1. Put the jar in `mods/` on the server.
-2. Restart the server, then edit `config/reststatsapi.json`.
+1. Install [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) and the expansions for the stats you want (for example `/papi ecloud download Statistic`).
+2. Put the RestStatsAPI jar in your `plugins/` folder.
+3. Start the server once, then edit `plugins/RestStatsAPI/config.yml`.
+4. Restart the server.
 
-## API Endpoints
+### Fabric / Forge
 
-- `GET /`: status, e.g. `{"status":"online","plugin":"RestStatsAPI","platform":"paper"}`
-- `GET /players`: all cached player statistics
+1. Put the RestStatsAPI jar in your server's `mods/` folder. Fabric API is **not** required, and players do **not** need the mod.
+2. Start the server once, then edit `config/reststatsapi.json`.
+3. Restart the server.
 
-## Configuration
+Then open `http://<your-server-ip>:8080/players` in a browser.
 
-Bukkit platforms (`config.yml`):
+## API
 
-```yaml
-server:
-  host: 0.0.0.0
-  port: 8080
-update-interval: 30      # seconds between refreshes
-tick-budget-ms: 2.0      # max main-thread time per tick spent on placeholders
-placeholders:
-  rank: "%rankedsmp_rank%"
-  kills: "%statistic_player_kills%"
-```
+| Method | Path | Returns |
+|--------|------|---------|
+| `GET` | `/players` | Every known player and their configured stats |
+| `GET` | `/` | Status check: `{"status":"online","plugin":"RestStatsAPI","platform":"paper"}` |
 
-Fabric / Forge (`config/reststatsapi.json`). Stats are written as `category/stat`, and the `minecraft:` prefix is optional:
-
-```json
-{
-  "host": "0.0.0.0",
-  "port": 8080,
-  "updateInterval": 30,
-  "stats": {
-    "kills": "custom/player_kills",
-    "deaths": "custom/deaths",
-    "play_time_ticks": "custom/play_time",
-    "diamonds_mined": "mined/diamond_ore"
-  }
-}
-```
-
-## Building
-
-```
-./gradlew releaseJars    # every platform jar -> build/release/
-```
-
-Modules: `core` (HTTP server + JSON), `bukkit-common`, `vanilla` (stats reader), and one module per platform.
-
-## Example Uses
-
-RestStatsAPI can power:
-
-- Minecraft server websites
-- Live leaderboards
-- Player profile pages
-- Discord server bots
-- Community dashboards
-- Custom server applications
-- Tournament/stat tracking systems
-
-## Example API Response
+### Example response: `GET /players`
 
 ```json
 [
@@ -134,3 +71,101 @@ RestStatsAPI can power:
   }
 ]
 ```
+
+All stat values are strings. `name` is left out if the server has never recorded the player's name.
+
+### Using it from a website
+
+```js
+const players = await fetch("http://your-server.com:8080/players").then(r => r.json());
+const top = players.sort((a, b) => b.stats.kills - a.stats.kills).slice(0, 10);
+```
+
+## Configuration
+
+### Plugin builds: `plugins/RestStatsAPI/config.yml`
+
+```yaml
+server:
+  host: 0.0.0.0   # address to listen on (use 127.0.0.1 if behind a reverse proxy)
+  port: 8080
+
+# How often (in seconds) player stats are refreshed.
+update-interval: 30
+
+# Max time (milliseconds) spent resolving placeholders per server tick. A refresh is
+# spread across as many ticks as needed, so large player lists never cause a lag spike.
+tick-budget-ms: 2.0
+
+# Output name -> PlaceholderAPI placeholder
+placeholders:
+  rank: "%rankedsmp_rank%"
+  kills: "%statistic_player_kills%"
+  deaths: "%statistic_deaths%"
+```
+
+Any placeholder works. If an expansion isn't installed, the raw placeholder text is returned instead, e.g. `"%rankedsmp_rank%"`.
+
+### Mod builds: `config/reststatsapi.json`
+
+```json
+{
+  "host": "0.0.0.0",
+  "port": 8080,
+  "updateInterval": 30,
+  "stats": {
+    "kills": "custom/player_kills",
+    "mob_kills": "custom/mob_kills",
+    "deaths": "custom/deaths",
+    "play_time_ticks": "custom/play_time",
+    "jumps": "custom/jump",
+    "diamonds_mined": "mined/diamond_ore"
+  }
+}
+```
+
+Stats are written as `category/stat`, using the names from the in-game Statistics screen and the [Minecraft Wiki](https://minecraft.wiki/w/Statistics). The `minecraft:` prefix is optional, so `custom/jump` is the same as `minecraft:custom/minecraft:jump`. Modded stats work too, e.g. `mined/create:zinc_ore`.
+
+| Category | Meaning | Example |
+|----------|---------|---------|
+| `custom` | General stats | `custom/player_kills`, `custom/deaths`, `custom/play_time` (in ticks, 20 per second) |
+| `mined` | Blocks mined | `mined/diamond_ore` |
+| `crafted` | Items crafted | `crafted/diamond_sword` |
+| `used` | Items used | `used/ender_pearl` |
+| `broken` | Tools broken | `broken/diamond_pickaxe` |
+| `picked_up` / `dropped` | Items picked up or dropped | `picked_up/diamond` |
+| `killed` / `killed_by` | Mobs killed, or killed by | `killed/zombie` |
+
+A stat the player doesn't have yet is returned as `"0"`.
+
+## How each build is optimised
+
+- **All plugin builds** resolve placeholders a few players per tick. Each tick spends at most `tick-budget-ms` on this, instead of handling every player at once. The JSON is built once per refresh and reused for every request, and the web server runs on its own small thread pool.
+- **Paper / Purpur** also pause refreshing while the server is struggling, meaning its average tick time is above 45 ms. This uses Paper's tick-time API.
+- **Spigot** is built against the modern Spigot API (`api-version: 1.20`).
+- **Universal Bukkit** is built for Java 8 against the 1.8.8 API, so it loads on every Bukkit server from 1.8 to 26.x.
+- **Fabric / Forge** never run on the server thread. They read the world's stats files on a low-priority background thread, and only re-read files that changed since the last refresh. They use no Minecraft code, which is why one jar covers every version from 1.20 to 26.x. They handle both the old (`world/stats`) and the 26.x (`world/players/stats`) folder layouts.
+
+## Good to know
+
+- **The API has no authentication.** Anyone who can reach the port can read the stats. To restrict access, firewall the port, or set `host` to `127.0.0.1` and put it behind a reverse proxy such as nginx or Caddy.
+- **Hosting panels:** many hosts only open specific ports. Set `port` to one your host has given you.
+- **Fabric / Forge freshness:** Minecraft writes a player's stats to disk on autosave (every 5 minutes by default) and when they log out. Online players' numbers can therefore lag behind by up to one autosave.
+- **Port already in use:** if the log says the API could not start, another program is using that port. Change `port`.
+
+## Building from source
+
+Requires JDK 25.
+
+```bash
+./gradlew releaseJars        # every platform jar -> build/release/
+./gradlew :paper:runServer   # start a Paper test server with the plugin installed
+```
+
+| Module | Contents |
+|--------|----------|
+| `core` | HTTP server and JSON writer, with no dependencies (Java 8) |
+| `bukkit-common` | Shared plugin logic: tick-budgeted refresh, PlaceholderAPI lookups |
+| `vanilla` | Stats-file reader and config shared by Fabric and Forge |
+| `paper`, `purpur`, `spigot`, `bukkit` | Plugin entrypoints, each built against its own platform API |
+| `fabric`, `forge` | Mod entrypoints |
