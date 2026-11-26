@@ -22,9 +22,10 @@ public class HttpServerManager {
 
     public void start() throws IOException {
 
-        int port = plugin.getConfig().getInt("server.port");
+        String host = plugin.getConfig().getString("server.host", "0.0.0.0");
+        int port = plugin.getConfig().getInt("server.port", 8080);
 
-        server = HttpServer.create(new InetSocketAddress(port), 0);
+        server = HttpServer.create(new InetSocketAddress(host, port), 0);
 
         // Players endpoint
         server.createContext("/players", new PlayersHandler(cacheManager));
@@ -61,7 +62,7 @@ public class HttpServerManager {
 
         server.start();
 
-        plugin.getLogger().info("API started on port " + port);
+        plugin.getLogger().info("API started on " + host + ":" + port);
     }
 
     public void stop() {

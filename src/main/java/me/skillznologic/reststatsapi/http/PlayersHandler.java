@@ -22,8 +22,6 @@ public class PlayersHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("Adding CORS headers");
-
         addCorsHeaders(exchange);
 
         if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {

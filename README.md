@@ -32,10 +32,20 @@ Instead of creating custom integrations for every plugin, RestStatsAPI uses Plac
   - Minimal server impact.
   - Uses caching to reduce repeated placeholder calculations.
  
-  Requirements
-Paper 1.21+
-Java 25+
-PlaceholderAPI
+## Requirements
+
+- Paper (or a Paper fork such as Purpur/Pufferfish) **1.20 – 26.x**
+- Java 17+ (whatever your server version already requires)
+- PlaceholderAPI
+
+### Which jar do I download?
+
+| Jar | Minecraft versions | Java |
+|-----|--------------------|------|
+| `RestStatsAPI-<ver>-mc1.20-26.x.jar` (**recommended / universal**) | 1.20 – 26.x | 17+ |
+| `RestStatsAPI-<ver>-mc1.21-26.x.jar` | 1.20.5 – 26.x | 21+ |
+| `RestStatsAPI-<ver>-mc26.x.jar` | 26.x | 25+ |
+
 API Endpoints
 Get all players
 GET /players
@@ -54,6 +64,8 @@ Restart your server.
 Development
 
 Built with:
+
+Build jars with `./gradlew jar -Ptarget=1.20` (also `1.21` or `26`); output is in `build/libs/`.
 
 Java
 Paper API

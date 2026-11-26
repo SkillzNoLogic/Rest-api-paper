@@ -1,36 +1,19 @@
 package me.skillznologic.reststatsapi.cache;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 public class CacheManager {
 
+    // Replaced atomically on each refresh so HTTP threads never see a half-built cache.
+    private volatile Map<String, PlayerCache> players = Collections.emptyMap();
 
-    private final Map<String, PlayerCache> players =
-            new HashMap<>();
-
-
-    public void update(PlayerCache player) {
-
-        players.put(
-                player.getUuid(),
-                player
-        );
-
+    public void replaceAll(Map<String, PlayerCache> newPlayers) {
+        players = Collections.unmodifiableMap(newPlayers);
     }
-
 
     public Map<String, PlayerCache> getPlayers() {
-
         return players;
-
-    }
-
-
-    public void clear() {
-
-        players.clear();
-
     }
 
 }
