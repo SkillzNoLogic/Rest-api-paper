@@ -2,8 +2,13 @@ server:
   host: 0.0.0.0
   port: 8080
 
-# How often (in seconds) player stats are refreshed.
-update-interval: 30
+# How often player stats are refreshed, in seconds (minimum 1).
+# Can also be changed in-game with: /reststats interval <seconds>
+refresh-interval: 30
+
+# Print a console message every time stats are refreshed (true/false).
+# Can also be toggled with: /reststats messages <on|off>
+console-messages: true
 
 # Max time (milliseconds) spent resolving placeholders per server tick. A refresh is spread across
 # as many ticks as needed so large player lists never cause a lag spike.
@@ -11,3 +16,5 @@ tick-budget-ms: 2.0
 
 placeholders:
   rank: "%rankedsmp_rank%"
+
+# After editing this file, run /reststats reload (no restart needed).

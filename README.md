@@ -90,8 +90,11 @@ server:
   host: 0.0.0.0   # address to listen on (use 127.0.0.1 if behind a reverse proxy)
   port: 8080
 
-# How often (in seconds) player stats are refreshed.
-update-interval: 30
+# How often player stats are refreshed, in seconds (minimum 1).
+refresh-interval: 30
+
+# Print a console message every time stats are refreshed (true/false).
+console-messages: true
 
 # Max time (milliseconds) spent resolving placeholders per server tick. A refresh is
 # spread across as many ticks as needed, so large player lists never cause a lag spike.
@@ -106,13 +109,36 @@ placeholders:
 
 Any placeholder works. If an expansion isn't installed, the raw placeholder text is returned instead, e.g. `"%rankedsmp_rank%"`.
 
+After editing the file, run `/reststats reload`. You don't need to restart.
+
+> Upgrading from 1.2.x? The old `update-interval` key (`updateInterval` for the mods) still works. The mods rewrite it to the new name automatically, and the plugins switch to the new name the next time you change the interval with a command.
+
+#### Commands
+
+`/reststats` (alias `/rsa`) needs the `reststatsapi.admin` permission (ops have it by default). It also works from the server console.
+
+| Command | What it does |
+|---------|--------------|
+| `/reststats` or `/reststats status` | Shows the API address, cached player count, refresh interval and whether console messages are on |
+| `/reststats interval <seconds>` | Changes how often stats refresh. Takes effect immediately and is saved to `config.yml` |
+| `/reststats messages <on\|off\|toggle>` | Turns the per-refresh console messages on or off. Saved to `config.yml` |
+| `/reststats refresh` | Refreshes stats right now |
+| `/reststats reload` | Reloads `config.yml`. The web server only restarts if `host` or `port` changed |
+
+With console messages on, each refresh logs a line like:
+
+```
+[RestStatsAPI] Refreshed stats for 42 players (3.1ms server time over 2 ticks). Next refresh in 30s.
+```
+
 ### Mod builds: `config/reststatsapi.json`
 
 ```json
 {
   "host": "0.0.0.0",
   "port": 8080,
-  "updateInterval": 30,
+  "refreshInterval": 30,
+  "consoleMessages": true,
   "stats": {
     "kills": "custom/player_kills",
     "mob_kills": "custom/mob_kills",
@@ -123,6 +149,13 @@ Any placeholder works. If an expansion isn't installed, the raw placeholder text
   }
 }
 ```
+
+- `refreshInterval`: how often stats are refreshed, in seconds (minimum 1).
+- `consoleMessages`: whether to print a console line on every refresh (`true`/`false`).
+
+**Changes apply automatically.** The mod checks the file every second, so you can save your edits and they take effect within a second or two. No restart or command is needed, and the console confirms with `Reloaded config/reststatsapi.json`. If you make a typo and the JSON is invalid, the previous settings stay active and a warning is logged.
+
+The mod builds have no in-game command. Adding one would need version-specific Minecraft code, and the single jar that covers 1.20 to 26.x would no longer be possible.
 
 Stats are written as `category/stat`, using the names from the in-game Statistics screen and the [Minecraft Wiki](https://minecraft.wiki/w/Statistics). The `minecraft:` prefix is optional, so `custom/jump` is the same as `minecraft:custom/minecraft:jump`. Modded stats work too, e.g. `mined/create:zinc_ore`.
 
